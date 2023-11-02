@@ -1,5 +1,10 @@
 use crate::symbol_table::hash_table::MyHashMap;
 
+pub enum SymbolTableType {
+    ID,
+    INT,
+    STRING
+}
 pub struct SymbolTable {
     id_hash_table: MyHashMap<String>,
     int_const_hash_table: MyHashMap<i32>,

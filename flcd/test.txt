@@ -1,0 +1,19 @@
+fn main() {
+    let a: i32;
+    let b: i32;
+    let c: i32;
+
+    read(a);
+    read(b);
+    read(c);
+
+    if (a >= b and a >= c) {
+        print(a);
+    }
+    elif (b >= a and b >= c) {
+        print(b);
+    }
+    else {
+        print(c);
+    }
+}
