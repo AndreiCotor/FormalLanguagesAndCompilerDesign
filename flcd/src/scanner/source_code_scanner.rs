@@ -59,6 +59,9 @@ fn extract_tokens_from_line(line: &str) -> Vec<String> {
 }
 
 fn is_int_constant(token: &str) -> bool {
+    if token == "0" {
+        return true;
+    }
     let re = Regex::new(r"^-?[1-9]\d*$").unwrap();
     re.is_match(token)
 }
@@ -73,9 +76,9 @@ fn is_id(token: &str) -> bool {
     re.is_match(token)
 }
 
-fn add_id_or_constant_to_pif(pif: &mut PIF, token: &str, symbol_table: &mut SymbolTable) {
+fn add_id_or_constant_to_pif(pif: &mut PIF, token: &str, symbol_table: &mut SymbolTable, line_num: i32) {
     let st_pos = if is_int_constant(token) {
-        let pos = symbol_table.add_int_const(token.parse().unwrap()).unwrap();
+        let pos = symbol_table.add_int_const(token.parse().unwrap());
         SymbolTablePosition {
             tp: SymbolTableType::INT,
             bucket: pos.0,
@@ -83,7 +86,7 @@ fn add_id_or_constant_to_pif(pif: &mut PIF, token: &str, symbol_table: &mut Symb
         }
     }
     else if is_string_constant(token) {
-        let pos = symbol_table.add_string_const(token.to_owned()).unwrap();
+        let pos = symbol_table.add_string_const(token.to_owned());
         SymbolTablePosition {
             tp: SymbolTableType::STRING,
             bucket: pos.0,
@@ -91,12 +94,15 @@ fn add_id_or_constant_to_pif(pif: &mut PIF, token: &str, symbol_table: &mut Symb
         }
     }
     else if is_id(token) {
-        let pos = symbol_table.add_string_const(token.to_owned()).unwrap();
+        let pos = symbol_table.add_id(token.to_owned());
         SymbolTablePosition {
             tp: SymbolTableType::ID,
             bucket: pos.0,
             item: pos.1,
         }
+    }
+    else {
+        panic!("Lexical error on line {}!", line_num);
     };
 
     pif.add(PIFEntry {
@@ -107,16 +113,17 @@ fn add_id_or_constant_to_pif(pif: &mut PIF, token: &str, symbol_table: &mut Symb
 
 pub fn process_source_code(file_name: &str, token_manager: &TokenManager) {
     let mut res = PIF::new();
-    let mut symbol_table = SymbolTable::new(64);
+    let mut symbol_table = SymbolTable::new(10);
 
     if let Ok(lines) = scan_source_code(file_name) {
+        let mut line_num = 1;
         for line in lines {
             if let Ok(ip) = line {
                 let tokens = extract_tokens_from_line(&ip);
 
                 for token in tokens {
                     match token_manager.get_token_code(&token) {
-                        None => add_id_or_constant_to_pif(&mut res, &token, &mut symbol_table),
+                        None => add_id_or_constant_to_pif(&mut res, &token, &mut symbol_table, line_num),
                         Some(code) =>
                             res.add(PIFEntry{
                                 token: code,
@@ -125,7 +132,14 @@ pub fn process_source_code(file_name: &str, token_manager: &TokenManager) {
                     }
                 }
             }
+            line_num += 1;
         }
     }
+
+    println!("PIF:");
+    println!("{}", res);
+    println!();
+    println!("Symbol table:");
+    println!("{}", symbol_table);
 }
 

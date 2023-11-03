@@ -7,6 +7,7 @@
 <
 <=
 ==
+>
 >=
 !=
 (
@@ -27,7 +28,10 @@ for
 print
 if
 else
+elif
+and
 until
 vec
 i32
 str
+in
