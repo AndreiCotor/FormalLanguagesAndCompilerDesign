@@ -1,10 +1,27 @@
+use std::fmt;
+use std::fmt::Formatter;
 use crate::symbol_table::hash_table::MyHashMap;
 
+#[derive(Debug)]
+pub enum SymbolTableType {
+    ID,
+    INT,
+    STRING
+}
+
+#[derive(Debug)]
 pub struct SymbolTable {
     id_hash_table: MyHashMap<String>,
     int_const_hash_table: MyHashMap<i32>,
     string_const_hash_table: MyHashMap<String>
 }
+
+impl fmt::Display for SymbolTable {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "ID: {} \n INT: {} \n STRING: {} \n", self.id_hash_table, self.int_const_hash_table, self.string_const_hash_table)
+    }
+}
+
 
 impl SymbolTable {
     pub fn new(size: usize) -> Self {
@@ -15,16 +32,28 @@ impl SymbolTable {
         }
     }
 
-    pub fn add_id(&mut self, name: String) -> Result<(usize, usize), ()> {
-        self.id_hash_table.insert(name)
+    pub fn add_id(&mut self, name: String) -> (usize, usize) {
+        if let Some(val) = self.id_hash_table.get(&name) {
+            return val;
+        }
+
+        self.id_hash_table.insert(name).unwrap()
     }
 
-    pub fn add_int_const(&mut self, int_const: i32) -> Result<(usize, usize), ()> {
-        self.int_const_hash_table.insert(int_const)
+    pub fn add_int_const(&mut self, int_const: i32) -> (usize, usize) {
+        if let Some(val) = self.int_const_hash_table.get(&int_const) {
+            return val;
+        }
+
+        self.int_const_hash_table.insert(int_const).unwrap()
     }
 
-    pub fn add_string_const(&mut self, string: String) -> Result<(usize, usize), ()> {
-        self.string_const_hash_table.insert(string)
+    pub fn add_string_const(&mut self, string: String) -> (usize, usize) {
+        if let Some(val) = self.string_const_hash_table.get(&string) {
+            return val;
+        }
+
+        self.string_const_hash_table.insert(string).unwrap()
     }
 
     pub fn find_id(&self, name: &str) -> Option<(usize, usize)> {

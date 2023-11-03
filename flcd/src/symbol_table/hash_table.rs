@@ -1,10 +1,26 @@
 use std::borrow::Borrow;
 use std::collections::hash_map::DefaultHasher;
+use std::fmt;
+use std::fmt::{Debug, Formatter};
 use std::hash::{Hash, Hasher};
 
+#[derive(Debug)]
 pub struct MyHashMap<Key> {
     size: usize,
     table: Vec<Vec<Key>>
+}
+
+impl<Key: Eq + Hash + Clone + Debug> fmt::Display for MyHashMap<Key> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let mut res = String::new();
+        let mut bucket = 0;
+        for el in &self.table {
+            res.push_str(&format!("Bucket {}: {:?}\n", bucket, el));
+            bucket += 1;
+        }
+
+        write!(f, "{}", res)
+    }
 }
 
 impl<Key: Eq + Hash + Clone> MyHashMap<Key> {
