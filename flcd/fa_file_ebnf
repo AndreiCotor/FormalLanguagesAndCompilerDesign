@@ -1,0 +1,11 @@
+digit = 0|1|..|9
+letter = a|b|..|z|A|B..|Z
+character = letter | digit
+idcharacter = character | "_"
+stateLine = character | stateLine "," character
+inLine = character
+outLine = character | outLine "," character
+alphabetLine = idcharacter | alphabetLine "," idcharacter
+truple = character "," character "," idcharacter
+transitionLine = truple | transitionLine ";" truple
+inputFile = stateLine "\n" inLine "\n" outLine "\n" alphabetLine "\n" transitionLine
