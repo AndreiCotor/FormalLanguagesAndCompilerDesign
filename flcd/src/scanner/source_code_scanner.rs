@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{self, BufRead};
 use regex::Regex;
+use crate::finite_automata::fa::FiniteAutomaton;
 use crate::pif::pif::{PIF, PIFEntry};
 use crate::scanner::char_type::CharType;
 use crate::symbol_table::symbol_table::{SymbolTable, SymbolTableType};
@@ -76,8 +77,8 @@ fn is_id(token: &str) -> bool {
     re.is_match(token)
 }
 
-fn add_id_or_constant_to_pif(pif: &mut PIF, token: &str, symbol_table: &mut SymbolTable, line_num: i32) {
-    let st_pos = if is_int_constant(token) {
+fn add_id_or_constant_to_pif(pif: &mut PIF, token: &str, symbol_table: &mut SymbolTable, line_num: i32, int_const_fa: &FiniteAutomaton, id_fa: &FiniteAutomaton) {
+    let st_pos = if int_const_fa.check_match(token).unwrap() {
         let pos = symbol_table.add_int_const(token.parse().unwrap());
         SymbolTablePosition {
             tp: SymbolTableType::INT,
@@ -93,7 +94,7 @@ fn add_id_or_constant_to_pif(pif: &mut PIF, token: &str, symbol_table: &mut Symb
             item: pos.1,
         }
     }
-    else if is_id(token) {
+    else if id_fa.check_match(token).unwrap() {
         let pos = symbol_table.add_id(token.to_owned());
         SymbolTablePosition {
             tp: SymbolTableType::ID,
@@ -111,7 +112,7 @@ fn add_id_or_constant_to_pif(pif: &mut PIF, token: &str, symbol_table: &mut Symb
     });
 }
 
-pub fn process_source_code(file_name: &str, token_manager: &TokenManager) {
+pub fn process_source_code(file_name: &str, token_manager: &TokenManager, int_const_fa: &FiniteAutomaton, id_fa: &FiniteAutomaton) {
     let mut res = PIF::new();
     let mut symbol_table = SymbolTable::new(10);
 
@@ -123,7 +124,7 @@ pub fn process_source_code(file_name: &str, token_manager: &TokenManager) {
 
                 for token in tokens {
                     match token_manager.get_token_code(&token) {
-                        None => add_id_or_constant_to_pif(&mut res, &token, &mut symbol_table, line_num),
+                        None => add_id_or_constant_to_pif(&mut res, &token, &mut symbol_table, line_num, int_const_fa, id_fa),
                         Some(code) =>
                             res.add(PIFEntry{
                                 token: code,
